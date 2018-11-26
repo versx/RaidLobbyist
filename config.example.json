@@ -1,0 +1,12 @@
+{
+  "guildId": 000000000000000000,
+  "ownerId": 000000000000000000,
+  "token": "<DISCORD_BOT_TOKEN>",
+  "enabled": true,
+  "raidChannelIdPool": [
+	000000000000000000,
+	000000000000000001,
+  ],
+  "raidLobbiesChannelId": 000000000000000000,
+  "lobbies": []
+}
