@@ -2,7 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
+    using System.Timers;
 
     using DSharpPlus;
     using DSharpPlus.Entities;
@@ -39,6 +41,7 @@
         private static readonly IEventLogger _logger = EventLogger.GetLogger();
         private readonly DiscordClient _client;
         private readonly Config _config;
+        private readonly Timer _timer;
 
         #endregion
 
@@ -66,6 +69,15 @@
         {
             _client = client;
             _config = config;
+
+            _timer = new Timer
+            {
+                Interval = 1000 * 60 * 10
+            };
+#pragma warning disable RECS0165 // Asynchronous methods should return a Task instead of void
+            _timer.Elapsed += async (sender, e) => await CheckActiveLobbies();
+#pragma warning restore RECS0165 // Asynchronous methods should return a Task instead of void
+            _timer.Start();
         }
 
         #endregion
@@ -383,6 +395,35 @@
                 }
             }
             _config.Save(Strings.ConfigFileName);
+        }
+
+        private async Task CheckActiveLobbies()
+        {
+            try
+            {
+                var keys = _config.ActiveLobbies.Keys.ToList();
+                for (int i = 0; i < keys.Count; ++i)
+                {
+                    var key = keys[i];
+                    var lobby = _config.ActiveLobbies[key];
+                    if (!lobby.IsExpired)
+                        continue;
+
+                    if (_config.ActiveLobbies.ContainsKey(key))
+                    {
+                        if (!await DeleteExpiredRaidLobby(key))
+                        {
+                            _logger.Error($"Failed to delete raid lobby message with id {key}.");
+                        }
+
+                        _config.ActiveLobbies.Remove(key);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex);
+            }
         }
 
         #endregion
