@@ -13,7 +13,11 @@
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
 
+    using ServiceStack.OrmLite;
+
     using T.Configuration;
+    using T.Data;
+    using T.Data.Models;
     using T.Diagnostics;
     using T.Extensions;
     using T.Models;
@@ -213,6 +217,8 @@
             if (!(_config.RaidChannelIdPool.Contains(channel.Id) || _config.RaidLobbiesChannelId == channel.Id))
                 return;
 
+
+
             var originalMessageId = message.Id;
             var lobby = GetExistingOrCreateNewLobby(channel, ref originalMessageId);
 
@@ -228,10 +234,35 @@
             var lobbyMessage = default(DiscordMessage);
             var embed = settings.RaidMessage?.Embeds[0];
 
+            if (embed == null)
+            {
+                _logger.Warn($"Discord message {settings.RaidMessage.Id} doesn't contain embed.");
+                return;
+            }
+
             switch (emoji.Name)
             {
                 case "➡":
                     #region Coming
+                    var parts = embed.Title.Split(':');
+                    var city = parts[0];
+                    var gymName = parts[1].TrimStart(' ');
+                    var gym = GetRaidByGymName(gymName);
+                    if (gym == null)
+                    {
+                        _logger.Error($"Failed to get gym from database from name {gymName}.");
+                        return;
+                    }
+
+                    var lobbyChannel = await CreateLobbyChannel(gym, city);
+                    if (lobbyChannel == null)
+                    {
+                        _logger.Error($"Failed to create new lobby channel for gym {gym.Name}.");
+                        return;
+                    }
+
+                    _logger.Warn($"LOBBY CHANNEL: {lobbyChannel.Name}");
+
                     if (!lobby.UsersComing.ContainsKey(user.Id))
                     {
                         lobby.UsersComing.Add(user.Id, new RaidLobbyUser { Id = user.Id, Eta = RaidLobbyEta.NotSet, Players = 1 });
@@ -397,6 +428,96 @@
             _config.Save(Strings.ConfigFileName);
         }
 
+        private async Task<DiscordChannel> CreateLobbyChannel(Gym gym, string city)
+        {
+            try
+            {
+                var lobbyCategory = await _client.GetChannelAsync(_config.LobbyCategoryId);
+                if (lobbyCategory == null)
+                {
+                    //Failed to find.
+                    return null;
+                }
+
+                var guildKey = _client.Guilds.FirstOrDefault();
+                var guild = guildKey.Value;
+                if (guild == null)
+                {
+                    //Failed to find.
+                    return null;
+                }
+
+                var isEgg = gym.RaidPokemonId == 0 && gym.RaidLevel > 0;
+                var channelName = city + "_" + (isEgg ? $"lvl{gym.RaidLevel}egg" : $"{Database.Instance.Pokemon[gym.RaidPokemonId].Name}") + $"_{gym.Name}";
+                var pkmn = Database.Instance.Pokemon[gym.RaidPokemonId];
+
+                var exists = guild.Channels.FirstOrDefault(x => string.Compare(x.Name, channelName, true) == 0);
+                DiscordChannel lobbyChannel;
+                if (exists == null)
+                {
+                    lobbyChannel = await guild.CreateChannelAsync(channelName, ChannelType.Text, lobbyCategory);
+                }
+                else
+                {
+                    lobbyChannel = exists;
+                }
+
+                await CreatePinnedLobbyMessage(gym, lobbyChannel);
+
+                return lobbyChannel;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex);
+                return null;
+            }
+        }
+
+        private async Task CreatePinnedLobbyMessage(Gym gym, DiscordChannel lobbyChannel)
+        {
+            var pkmnImage = gym.IsEgg ? string.Format(Strings.EggImage, gym.RaidLevel) : gym.RaidPokemonId.GetPokemonImage(gym.RaidPokemonForm.ToString());
+            var eb = new DiscordEmbedBuilder
+            {
+                Title = gym.Name,
+                Color = gym.RaidLevel.BuildRaidColor(),
+                Url = string.Format(Strings.GoogleMaps, gym.Latitude, gym.Longitude),
+                ImageUrl = string.Format(Strings.GoogleMapsStaticImage, gym.Latitude, gym.Longitude) + $"&key={_config.GmapsKey}",
+                ThumbnailUrl = pkmnImage,
+                Footer = new DiscordEmbedBuilder.EmbedFooter
+                {
+                    Text = $"versx | {DateTime.Now}",
+                    IconUrl = string.Empty
+                }
+            };
+
+            var item = gym.IsEgg ? $"Level {gym.RaidLevel} Egg" : Database.Instance.Pokemon[gym.RaidPokemonId].Name;
+            eb.AddField("Raid Boss", item, true);
+            if (gym.ExRaidEligible)
+            {
+                eb.AddField("EX-Eligible Raid", "Yes", true);
+            }
+
+            if (gym.IsEgg)
+            {
+                eb.AddField("Starts", gym.RaidBattleTimestamp.ToString(), true);
+            }
+            else
+            {
+                eb.AddField("CP", gym.RaidPokemonCP.ToString("N0"), true);
+                eb.AddField("Ends", gym.RaidEndTimestamp.ToString(), true);
+                eb.AddField("Fast Move", Database.Instance.Movesets[gym.RaidPokemonMove1].Name, true);
+                eb.AddField("Charge Move", Database.Instance.Movesets[gym.RaidPokemonMove2].Name, true);
+            }
+            eb.AddField("Team", gym.Team.ToString(), true);
+            eb.AddField("Started By", "(user)", true);
+            eb.AddField("Location", $"{gym.Latitude},{gym.Longitude}", true);
+
+            //TODO: List who's going and who's already at the raid.
+
+            var lobbyMessage = await lobbyChannel.SendMessageAsync($"(user) started a raid lobby for {item} at {gym.Name}", false, eb);
+            await lobbyMessage.PinAsync();
+        }
+
         private async Task CheckActiveLobbies()
         {
             try
@@ -424,6 +545,21 @@
             {
                 _logger.Error(ex);
             }
+        }
+
+        private Gym GetRaidByGymName(string gymName)
+        {
+            using (var db = DataAccessLayer.CreateFactory(_config.ConnectionString))
+            {
+                var gyms = db.LoadSelect<Gym>();
+                var gym = gyms.FirstOrDefault(x => string.Compare(gymName, x.Name, true) == 0);
+                if (gym?.RaidSpawnTimestamp > 0)
+                {
+                    return gym;
+                }
+            }
+
+            return null;
         }
 
         #endregion
@@ -635,5 +771,18 @@
         public DiscordMessage RaidMessage { get; set; }
 
         public DiscordChannel RaidLobbyChannel { get; set; }
+    }
+
+    public static class PokemonExtensions
+    {
+        public static string GetPokemonImage(this int pokemonId, string form)
+        {
+            if (int.TryParse(form, out var formId))
+            {
+                return string.Format(Strings.PokemonImage, pokemonId, formId);
+            }
+
+            return string.Format(Strings.PokemonImage, pokemonId, 0);
+        }
     }
 }

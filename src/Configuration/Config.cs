@@ -33,6 +33,15 @@
         [JsonProperty("raidLobbiesChannelId")]
         public ulong RaidLobbiesChannelId { get; set; }
 
+        [JsonProperty("lobbyCategoryId")]
+        public ulong LobbyCategoryId { get; set; }
+        
+        [JsonProperty("connectionString")]
+        public string ConnectionString { get; set; }
+
+        [JsonProperty("gmapsKey")]
+        public string GmapsKey { get; set; }
+
         [JsonProperty("lobbies")]
         public Dictionary<ulong, RaidLobby> ActiveLobbies { get; set; }
 

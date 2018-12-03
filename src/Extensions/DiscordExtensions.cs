@@ -100,5 +100,24 @@
                 return null;
             }
         }
+
+        public static DiscordColor BuildRaidColor(this int level)
+        {
+            switch (level)
+            {
+                case 1:
+                    return DiscordColor.HotPink;
+                case 2:
+                    return DiscordColor.HotPink;
+                case 3:
+                    return DiscordColor.Yellow;
+                case 4:
+                    return DiscordColor.Yellow;
+                case 5:
+                    return DiscordColor.Purple;
+            }
+
+            return DiscordColor.White;
+        }
     }
 }
