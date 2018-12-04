@@ -244,17 +244,16 @@
             {
                 case "➡":
                     #region Coming
-                    var parts = embed.Title.Split(':');
-                    var city = parts[0];
-                    var gymName = parts[1].TrimStart(' ');
-                    var gym = GetRaidByGymName(gymName);
+                    var gymObj = ParseEmbedTitle(embed.Title);
+                    var gym = GetRaidByGymName(gymObj.Name);
                     if (gym == null)
                     {
-                        _logger.Error($"Failed to get gym from database from name {gymName}.");
+                        _logger.Error($"Failed to get gym from database from name {gymObj.Name}.");
                         return;
                     }
+                    gymObj.Gym = gym;
 
-                    var lobbyChannel = await CreateLobbyChannel(gym, city);
+                    var lobbyChannel = await CreateLobbyChannel(gymObj);
                     if (lobbyChannel == null)
                     {
                         _logger.Error($"Failed to create new lobby channel for gym {gym.Name}.");
@@ -263,23 +262,23 @@
 
                     _logger.Warn($"LOBBY CHANNEL: {lobbyChannel.Name}");
 
-                    if (!lobby.UsersComing.ContainsKey(user.Id))
-                    {
-                        lobby.UsersComing.Add(user.Id, new RaidLobbyUser { Id = user.Id, Eta = RaidLobbyEta.NotSet, Players = 1 });
-                    }
+                    //if (!lobby.UsersComing.ContainsKey(user.Id))
+                    //{
+                    //    lobby.UsersComing.Add(user.Id, new RaidLobbyUser { Id = user.Id, Eta = RaidLobbyEta.NotSet, Players = 1 });
+                    //}
 
-                    if (lobby.UsersReady.ContainsKey(user.Id))
-                    {
-                        lobby.UsersReady.Remove(user.Id);
-                    }
+                    //if (lobby.UsersReady.ContainsKey(user.Id))
+                    //{
+                    //    lobby.UsersReady.Remove(user.Id);
+                    //}
 
-                    lobbyMessage = await UpdateRaidLobbyMessage(lobby, settings.RaidLobbyChannel, embed);
-                    await _client.SetAccountsReactions
-                    (
-                        _config.RaidLobbiesChannelId == channel.Id
-                        ? lobbyMessage
-                        : message
-                    );
+                    //lobbyMessage = await UpdateRaidLobbyMessage(lobby, settings.RaidLobbyChannel, embed);
+                    //await _client.SetAccountsReactions
+                    //(
+                    //    _config.RaidLobbiesChannelId == channel.Id
+                    //    ? lobbyMessage
+                    //    : message
+                    //);
                     break;
                 #endregion
                 case "✅":
@@ -428,7 +427,21 @@
             _config.Save(Strings.ConfigFileName);
         }
 
-        private async Task<DiscordChannel> CreateLobbyChannel(Gym gym, string city)
+        private GymObject ParseEmbedTitle(string title)
+        {
+            if (!title.Contains(":"))
+                return new GymObject("", title); //TODO: Redo
+
+            var parts = title.Split(':');
+            if (parts.Length > 2 || parts.Length <= 0)
+                return new GymObject("", title); //TODO: Redo
+
+            var city = parts[0];
+            var gymName = parts[1].TrimStart(' ');
+            return new GymObject(city, gymName);
+        }
+
+        private async Task<DiscordChannel> CreateLobbyChannel(GymObject gymObj)
         {
             try
             {
@@ -447,22 +460,22 @@
                     return null;
                 }
 
-                var isEgg = gym.RaidPokemonId == 0 && gym.RaidLevel > 0;
-                var channelName = city + "_" + (isEgg ? $"lvl{gym.RaidLevel}egg" : $"{Database.Instance.Pokemon[gym.RaidPokemonId].Name}") + $"_{gym.Name}";
-                var pkmn = Database.Instance.Pokemon[gym.RaidPokemonId];
+                var isEgg = gymObj.Gym.RaidPokemonId == 0 && gymObj.Gym.RaidLevel > 0;
+                var channelName = gymObj.City + "_" + (isEgg ? $"lvl{gymObj.Gym.RaidLevel}egg" : $"{Database.Instance.Pokemon[gymObj.Gym.RaidPokemonId].Name}") + $"_{gymObj.Gym.Name}";
+                var pkmn = Database.Instance.Pokemon[gymObj.Gym.RaidPokemonId];
 
                 var exists = guild.Channels.FirstOrDefault(x => string.Compare(x.Name, channelName, true) == 0);
                 DiscordChannel lobbyChannel;
                 if (exists == null)
                 {
                     lobbyChannel = await guild.CreateChannelAsync(channelName, ChannelType.Text, lobbyCategory);
+                    await CreatePinnedLobbyMessage(gymObj.Gym, lobbyChannel);
                 }
                 else
                 {
                     lobbyChannel = exists;
+                    //TODO: Update pinned message.
                 }
-
-                await CreatePinnedLobbyMessage(gym, lobbyChannel);
 
                 return lobbyChannel;
             }
@@ -486,7 +499,7 @@
                 Footer = new DiscordEmbedBuilder.EmbedFooter
                 {
                     Text = $"versx | {DateTime.Now}",
-                    IconUrl = string.Empty
+                    IconUrl = _client.Guilds.FirstOrDefault().Value?.IconUrl
                 }
             };
 
@@ -512,6 +525,9 @@
             eb.AddField("Started By", "(user)", true);
             eb.AddField("Location", $"{gym.Latitude},{gym.Longitude}", true);
 
+            eb.AddField("Trainers On Their Way:", "", true);
+            eb.AddField("Trainers At the Raid:", "", true);
+
             //TODO: List who's going and who's already at the raid.
 
             var lobbyMessage = await lobbyChannel.SendMessageAsync($"(user) started a raid lobby for {item} at {gym.Name}", false, eb);
@@ -522,6 +538,7 @@
         {
             try
             {
+                //TODO: Check channels and delete them.
                 var keys = _config.ActiveLobbies.Keys.ToList();
                 for (int i = 0; i < keys.Count; ++i)
                 {
@@ -760,6 +777,21 @@
         }
 
         #endregion
+    }
+
+    public class GymObject
+    {
+        public string City { get; set; }
+
+        public string Name { get; set; }
+
+        public Gym Gym { get; set; }
+
+        public GymObject(string city, string name)
+        {
+            City = city;
+            Name = name;
+        }
     }
 
     public class RaidLobbySettings
