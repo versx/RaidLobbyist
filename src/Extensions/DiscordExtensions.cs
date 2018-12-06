@@ -1,6 +1,7 @@
 ﻿namespace T.Extensions
 {
     using System;
+    using System.Linq;
     using System.Threading.Tasks;
 
     using DSharpPlus;
@@ -18,8 +19,15 @@
 
             if (deleteExisting)
             {
-                await message.DeleteAllReactionsAsync();
-                await Task.Delay(10);
+                try
+                {
+                    await message?.DeleteAllReactionsAsync();
+                    await Task.Delay(10);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex);
+                }
             }
 
             await message.CreateReactionAsync(DiscordEmoji.FromName(client, ":arrow_right:"));
@@ -99,6 +107,22 @@
                 _logger.Error(ex);
                 return null;
             }
+        }
+
+        public static async Task<DiscordEmbed> GetEmbedFromMessageId(this DiscordChannel channel, ulong messageId)
+        {
+            var message = await channel.GetMessage(messageId);
+            if (message.Embeds.Count > 0)
+            {
+                return message.Embeds[0];
+            }
+
+            return null;
+        }
+
+        public static ulong? GetEmojiId(this DiscordGuild guild, string emojiName)
+        {
+            return guild.Emojis.FirstOrDefault(x => string.Compare(x.Name, emojiName, true) == 0)?.Id;
         }
 
         public static DiscordColor BuildRaidColor(this int level)

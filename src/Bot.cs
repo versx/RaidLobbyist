@@ -149,12 +149,20 @@
 
         #region Public Methods
 
-        public void Start()
+        public async Task Start()
         {
             _logger.Trace("Bot::Start");
             _logger.Info("Connecting to Discord...");
 
-            _client.ConnectAsync();
+            await _client.ConnectAsync();
+        }
+
+        public async Task Stop()
+        {
+            _logger.Trace($"Bot::Stop");
+            _logger.Info("Disconnecting from Discord...");
+
+            await _client.DisconnectAsync();
         }
 
         #endregion
