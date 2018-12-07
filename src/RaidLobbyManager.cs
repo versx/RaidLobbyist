@@ -157,7 +157,8 @@
         {
             _logger.Trace($"RaidLobbyManager::ProcessRaidLobbyReaction [DiscordUser={user.Username}, DiscordChannel={channel.Name}, DiscordMessage={message.Content}, DiscordEmoji={emoji.Name}]");
 
-            if (!(_config.RaidChannelIdPool.Contains(channel.Id) || (await GetLobbyCategory()).Children.FirstOrDefault(x => x.Id == channel.Id) != null))
+            var isLobbyChannel = (await GetLobbyCategory()).Children.FirstOrDefault(x => x.Id == channel.Id) != null;
+            if (!(_config.RaidChannelIdPool.Contains(channel.Id) || isLobbyChannel))
                 return;
 
             var embed = await channel.GetEmbedMessage(message.Id);
@@ -168,8 +169,6 @@
             }
 
             await _client.SetDefaultRaidReactions(message, false);
-            
-            //TODO: If reaction is from lobby channel, check against lobby categories children object.
 
             var lobby = LobbyFromTitle(embed.Title);
             if (lobby.Gym.RaidLevel == 0)
@@ -181,6 +180,13 @@
             if (!_config.RaidLobbies.ContainsKey(lobby.ChannelName))
             {
                 _config.RaidLobbies.Add(lobby.ChannelName, lobby);
+            }
+
+            lobby = _config.RaidLobbies[lobby.ChannelName];
+            if (string.IsNullOrEmpty(lobby.StartedBy))
+            {
+                lobby.StartedBy = $"{user.Username}#{user.Discriminator}";
+                lobby.CreatedAt = DateTime.Now;
             }
 
             var lobbyChannel = await CreateLobbyChannel(lobby);
@@ -263,10 +269,6 @@
                 var lobbyCategory = await GetLobbyCategory();
                 var exists = lobbyCategory.Children.FirstOrDefault(x => string.Compare(x.Name, lobby.ChannelName, true) == 0);
                 var lobbyChannel = exists ?? await lobbyCategory.Guild.CreateChannelAsync(lobby.ChannelName, ChannelType.Text, lobbyCategory);
-                if (lobby.CreatedAt != Lobby.DefaultCreatedAt)
-                {
-                    lobby.CreatedAt = DateTime.Now;
-                }
 
                 if (lobbyChannel == null)
                 {
@@ -346,11 +348,13 @@
                 eb.AddField("Team", $"<{lobby.Gym.Team.ToString().ToLower()}:{teamId}>", true);
             }
 
-            if (user != null)
+            if (!string.IsNullOrEmpty(lobby.StartedBy))
             {
-                eb.AddField("Started By", $"{user.Username}#{user.Discriminator}", true);
+                eb.AddField("Started By", lobby.StartedBy, true);
             }
-            eb.AddField("Location", $"{lobby.Gym.Latitude},{lobby.Gym.Longitude}", true);
+            eb.AddField("Location", $"{Math.Round(lobby.Gym.Latitude, 5)},{Math.Round(lobby.Gym.Longitude, 5)}\r\n" + 
+                                    $"[[Google Maps]({string.Format(Strings.GoogleMaps, lobby.Gym.Latitude, lobby.Gym.Longitude)})]\r\n" + 
+                                    $"[[Apple Maps]({string.Format(Strings.AppleMaps, lobby.Gym.Latitude, lobby.Gym.Longitude)})]", true);
 
             if (!_config.RaidLobbies.ContainsKey(lobby.ChannelName))
             {
@@ -380,7 +384,6 @@
             var lobbyMessage = default(DiscordMessage);
             if (pinned.Count > 0)
             {
-                //TODO: Check if update existing message works.
                 lobbyMessage = await pinned[0].ModifyAsync(string.Empty, eb);
             }
             else

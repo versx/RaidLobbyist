@@ -35,6 +35,9 @@
             }
         }
 
+        [JsonProperty("startedBy")]
+        public string StartedBy { get; set; }
+
         [JsonProperty("createdAt")]
         public DateTime CreatedAt { get; set; }
 
