@@ -157,7 +157,7 @@
         {
             _logger.Trace($"RaidLobbyManager::ProcessRaidLobbyReaction [DiscordUser={user.Username}, DiscordChannel={channel.Name}, DiscordMessage={message.Content}, DiscordEmoji={emoji.Name}]");
 
-            if (!_config.RaidChannelIdPool.Contains(channel.Id))
+            if (!(_config.RaidChannelIdPool.Contains(channel.Id) || (await GetLobbyCategory()).Children.FirstOrDefault(x => x.Id == channel.Id) != null))
                 return;
 
             var embed = await channel.GetEmbedMessage(message.Id);
@@ -168,9 +168,6 @@
             }
 
             await _client.SetDefaultRaidReactions(message, false);
-            //var lobbyCategory = await GetLobbyCategory();
-            //var childChannels = lobbyCategory.Children;
-            //var isLobbyChannel = childChannels.FirstOrDefault(x => x.Id == channel.Id) != null;
             
             //TODO: If reaction is from lobby channel, check against lobby categories children object.
 
