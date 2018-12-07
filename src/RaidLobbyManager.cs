@@ -166,13 +166,19 @@
             }
 
             await _client.SetDefaultRaidReactions(message, false);
-            var lobbyCategory = await GetLobbyCategory();
-            var childChannels = lobbyCategory.Children;
-            var isLobbyChannel = childChannels.FirstOrDefault(x => x.Id == channel.Id) != null;
+            //var lobbyCategory = await GetLobbyCategory();
+            //var childChannels = lobbyCategory.Children;
+            //var isLobbyChannel = childChannels.FirstOrDefault(x => x.Id == channel.Id) != null;
             
             //TODO: If reaction is from lobby channel, check against lobby categories children object.
 
             var lobby = LobbyFromTitle(embed.Title);
+            if (lobby.Gym.RaidLevel == 0)
+            {
+                _logger.Warn($"Raids are over.");
+                return;
+            }
+
             if (!_config.RaidLobbies.ContainsKey(lobby.ChannelName))
             {
                 _config.RaidLobbies.Add(lobby.ChannelName, lobby);
