@@ -39,41 +39,6 @@
             }
         }
 
-        public static async Task SetAccountsReactions(this DiscordClient client, DiscordMessage message, bool deleteExisting = true)
-        {
-            if (client == null) return;
-
-            if (deleteExisting)
-            {
-                await message.DeleteAllReactionsAsync();
-            }
-
-            await message.CreateReactionAsync(DiscordEmoji.FromName(client, ":one:"));
-            await message.CreateReactionAsync(DiscordEmoji.FromName(client, ":two:"));
-            await message.CreateReactionAsync(DiscordEmoji.FromName(client, ":three:"));
-            await message.CreateReactionAsync(DiscordEmoji.FromName(client, ":four:"));
-            //await message.CreateReactionAsync(DiscordEmoji.FromName(client, ":five:"));
-            //await message.CreateReactionAsync(DiscordEmoji.FromName(client, ":six:"));
-            //await message.CreateReactionAsync(DiscordEmoji.FromName(client, ":seven:"));
-            //await message.CreateReactionAsync(DiscordEmoji.FromName(client, ":eight:"));
-            //await message.CreateReactionAsync(DiscordEmoji.FromName(client, ":nine:"));
-            //await message.CreateReactionAsync(DiscordEmoji.FromName(client, ":ten:"));
-        }
-
-        public static async Task SetEtaReactions(this DiscordClient client, DiscordMessage message, bool deleteExisting = true)
-        {
-            if (client == null) return;
-
-            if (deleteExisting)
-            {
-                await message.DeleteAllReactionsAsync();
-            }
-
-            await message.CreateReactionAsync(DiscordEmoji.FromName(client, ":five:"));
-            await message.CreateReactionAsync(DiscordEmoji.FromName(client, ":keycap_ten:"));
-            //TODO: Add more ETA reactions.
-        }
-
         public static async Task<DiscordMessage> SendDirectMessage(this DiscordClient client, DiscordUser user, string message, DiscordEmbed embed)
         {
             if (string.IsNullOrEmpty(message) && embed == null)
@@ -109,7 +74,7 @@
             }
         }
 
-        public static async Task<DiscordEmbed> GetEmbedFromMessageId(this DiscordChannel channel, ulong messageId)
+        public static async Task<DiscordEmbed> GetEmbedMessage(this DiscordChannel channel, ulong messageId)
         {
             var message = await channel.GetMessage(messageId);
             if (message.Embeds.Count > 0)

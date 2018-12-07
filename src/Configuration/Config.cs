@@ -6,8 +6,8 @@
 
     using Newtonsoft.Json;
 
+    using T.Data.Models;
     using T.Diagnostics;
-    using T.Models;
 
     public class Config
     {
@@ -30,9 +30,6 @@
         [JsonProperty("raidChannelIdPool")]
         public List<ulong> RaidChannelIdPool { get; set; }
 
-        [JsonProperty("raidLobbiesChannelId")]
-        public ulong RaidLobbiesChannelId { get; set; }
-
         [JsonProperty("lobbyCategoryId")]
         public ulong LobbyCategoryId { get; set; }
         
@@ -43,14 +40,14 @@
         public string GmapsKey { get; set; }
 
         [JsonProperty("lobbies")]
-        public Dictionary<ulong, RaidLobby> ActiveLobbies { get; set; }
+        public Dictionary<string, Lobby> RaidLobbies { get; set; }
 
         #endregion
 
         public Config()
         {
-            ActiveLobbies = new Dictionary<ulong, RaidLobby>();
             RaidChannelIdPool = new List<ulong>();
+            RaidLobbies = new Dictionary<string, Lobby>();
         }
 
         public void Save(string filePath)

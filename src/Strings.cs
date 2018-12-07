@@ -2,8 +2,13 @@
 {
     public static class Strings
     {
-        public const string ConfigFileName = "config.json";
+        public const string BotName = "Raid Lobbyist";
 
+        public const string ConfigFileName = "config.json";
+        public const string PokemonFileName = "pokemon.json";
+        public const string MovesetsFileName = "moves.json";
+
+        public const string DataFolder = "Data";
         public const string LogsFolder = "Logs";
 
         public const string CrashMessage = "I JUST CRASHED";

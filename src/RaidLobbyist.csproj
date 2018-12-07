@@ -97,12 +97,16 @@
     <Compile Include="Data\DataAccessLayer.cs" />
     <Compile Include="Data\Database.cs" />
     <Compile Include="Data\Models\Gym.cs" />
+    <Compile Include="Data\Models\Lobby.cs" />
+    <Compile Include="Data\Models\Moveset.cs" />
+    <Compile Include="Data\Models\Pokemon.cs" />
+    <Compile Include="Data\Models\PokemonType.cs" />
+    <Compile Include="Data\Models\User.cs" />
     <Compile Include="Diagnostics\EventLogger.cs" />
     <Compile Include="Diagnostics\IEventLogger.cs" />
     <Compile Include="Diagnostics\LogType.cs" />
     <Compile Include="Extensions\DiscordExtensions.cs" />
-    <Compile Include="Models\RaidLobby.cs" />
-    <Compile Include="Models\RaidLobbyUser.cs" />
+    <Compile Include="Extensions\PokemonExtensions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RaidLobbyManager.cs" />
@@ -111,7 +115,9 @@
     <Compile Include="Extensions\TimeSpanExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -120,6 +126,6 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>move /Y $(TargetDir)*.xml $(TargetDir)Libs
-mv $(TargetDir)*.dll $(TargetDir)Libs</PostBuildEvent>
+move /Y $(TargetDir)*.dll $(TargetDir)Libs</PostBuildEvent>
   </PropertyGroup>
 </Project>

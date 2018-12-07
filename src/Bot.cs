@@ -14,7 +14,7 @@
     {
         #region Variables
 
-        private readonly RaidLobbyManager _lobbyMgr;
+        private readonly RaidLobbyManager _lobbyManager;
         private readonly DiscordClient _client;
         private readonly Config _config;
         private readonly IEventLogger _logger;
@@ -27,7 +27,7 @@
         {
             var name = System.Reflection.MethodBase.GetCurrentMethod().DeclaringType.FullName;
             _logger = EventLogger.GetLogger(name);
-            _logger.Trace($"Bot::Bot [WhConfig={config.GuildId}, OwnerId={config.OwnerId}]");
+            _logger.Trace($"Bot::Bot [GuildId={config.GuildId}, OwnerId={config.OwnerId}]");
 
             _config = config;
 
@@ -68,7 +68,7 @@
             _client.ClientErrored += Client_ClientErrored;
             _client.DebugLogger.LogMessageReceived += DebugLogger_LogMessageReceived;
 
-            _lobbyMgr = new RaidLobbyManager(_client, _config);
+            _lobbyManager = new RaidLobbyManager(_client, _config);
         }
 
         #endregion
@@ -87,7 +87,7 @@
             if (!_config.Enabled)
                 return;
 
-            await _lobbyMgr.ProcessReaction(e);
+            await _lobbyManager.ProcessReaction(e);
         }
 
         private async Task Client_ClientErrored(ClientErrorEventArgs e)
@@ -152,16 +152,16 @@
         public async Task Start()
         {
             _logger.Trace("Bot::Start");
-            _logger.Info("Connecting to Discord...");
 
+            _logger.Info("Connecting to Discord...");
             await _client.ConnectAsync();
         }
 
         public async Task Stop()
         {
             _logger.Trace($"Bot::Stop");
-            _logger.Info("Disconnecting from Discord...");
 
+            _logger.Info("Disconnecting from Discord...");
             await _client.DisconnectAsync();
         }
 
