@@ -258,7 +258,7 @@
                 var lobbyCategory = await GetLobbyCategory();
                 var exists = lobbyCategory.Children.FirstOrDefault(x => string.Compare(x.Name, lobby.ChannelName, true) == 0);
                 var lobbyChannel = exists ?? await lobbyCategory.Guild.CreateChannelAsync(lobby.ChannelName, ChannelType.Text, lobbyCategory);
-                if (lobby.CreatedAt != DateTime.MaxValue)
+                if (lobby.CreatedAt != Lobby.DefaultCreatedAt)
                 {
                     lobby.CreatedAt = DateTime.Now;
                 }
@@ -296,7 +296,7 @@
                 Footer = new DiscordEmbedBuilder.EmbedFooter
                 {
                     Text = $"versx | {DateTime.Now}",
-                    IconUrl = _client.Guilds.FirstOrDefault().Value?.IconUrl
+                    IconUrl = _client.Guilds.ContainsKey(_config.GuildId) ? _client.Guilds[_config.GuildId].IconUrl : string.Empty
                 }
             };
 
@@ -307,6 +307,7 @@
                 eb.AddField("EX-Eligible Raid", "Yes", true);
             }
 
+            eb.AddField("Level", lobby.Gym.RaidLevel.ToString(), true);
             if (lobby.Gym.IsEgg)
             {
                 eb.AddField("Starts", lobby.Gym.RaidBattleTimestamp.FromUnix().ToLongTimeString(), true);
@@ -339,6 +340,7 @@
                 var teamId = _client.Guilds[_config.GuildId].GetEmojiId(lobby.Gym.Team.ToString().ToLower());
                 eb.AddField("Team", $"<{lobby.Gym.Team.ToString().ToLower()}:{teamId}>", true);
             }
+
             if (user != null)
             {
                 eb.AddField("Started By", $"{user.Username}#{user.Discriminator}", true);
@@ -391,21 +393,20 @@
             for (var i = 0; i < lobbyChannels.Count; i++)
             {
                 var lobbyChannel = lobbyChannels[i];
-                if (_config.RaidLobbies.ContainsKey(lobbyChannel.Name))
+                if (!_config.RaidLobbies.ContainsKey(lobbyChannel.Name))
+                    continue;
+
+                var lobby = _config.RaidLobbies[lobbyChannel.Name];
+                if (!lobby.IsExpired)
+                    continue;
+
+                if (!_config.RaidLobbies.Remove(lobbyChannel.Name))
                 {
-                    var lobby = _config.RaidLobbies[lobbyChannel.Name];
-                    var isExpired = lobby.CreatedAt.AddHours(2) < DateTime.Now;
-                    if (!isExpired)
-                        continue;
-
-                    if (!_config.RaidLobbies.Remove(lobbyChannel.Name))
-                    {
-                        _logger.Warn($"Could not remove raid lobby '{lobbyChannel.Name}'.");
-                        continue;
-                    }
-
-                    await lobbyChannel.DeleteAsync("Automated: Raid lobby expired.");
+                    _logger.Warn($"Could not remove raid lobby '{lobbyChannel.Name}'.");
+                    continue;
                 }
+
+                await lobbyChannel.DeleteAsync("Automated: Raid lobby expired.");
             }
         }
 

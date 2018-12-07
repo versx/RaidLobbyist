@@ -7,6 +7,8 @@
 
     public class Lobby
     {
+        public static readonly DateTime DefaultCreatedAt = DateTime.MaxValue.Subtract(new TimeSpan(2, 0, 0));
+
         [JsonProperty("city")]
         public string City { get; set; }
 
@@ -41,7 +43,7 @@
 
         public Lobby()
         {
-            CreatedAt = DateTime.MaxValue;
+            CreatedAt = DefaultCreatedAt;
             Users = new List<User>();
         }
 
