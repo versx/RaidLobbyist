@@ -18,6 +18,8 @@
     using T.Diagnostics;
     using T.Extensions;
 
+    //TODO: Automatically hatch raid eggs and update lobby.
+
     public class RaidLobbyManager
     {
         #region Variables
@@ -175,7 +177,7 @@
             var lobby = LobbyFromTitle(embed.Title);
             if (lobby.Gym.RaidLevel == 0)
             {
-                _logger.Warn($"Raids are over.");
+                _logger.Warn($"Raid at gym '{embed.Title}' is over and doesn't exist.");
                 return;
             }
 
