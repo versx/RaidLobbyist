@@ -326,7 +326,7 @@
                 if (Database.Movesets.ContainsKey(lobby.Gym.RaidPokemonMove1))
                 {
                     var fastMove = Database.Movesets[lobby.Gym.RaidPokemonMove1];
-                    var fastMoveTypeId = _client.Guilds[_config.GuildId].GetEmojiId(fastMove.Type);
+                    var fastMoveTypeId = _client.Guilds[_config.GuildId].GetEmojiId($"types_{fastMove.Type}");
                     if (fastMoveTypeId > 0)
                     {
                         eb.AddField("Fast Move", $"<{fastMove.Type.ToLower()}:{fastMoveTypeId}> {fastMove.Name}", true);
@@ -335,7 +335,7 @@
                 if (Database.Movesets.ContainsKey(lobby.Gym.RaidPokemonMove2))
                 {
                     var chargeMove = Database.Movesets[lobby.Gym.RaidPokemonMove2];
-                    var chargeMoveTypeId = _client.Guilds[_config.GuildId].GetEmojiId(chargeMove.Type);
+                    var chargeMoveTypeId = _client.Guilds[_config.GuildId].GetEmojiId($"types_{chargeMove.Type}");
                     if (chargeMoveTypeId > 0)
                     {
                         eb.AddField("Charge Move", $"<{chargeMove.Type.ToLower()}:{chargeMoveTypeId}> {chargeMove.Name}", true);
