@@ -18,7 +18,7 @@
     using T.Diagnostics;
     using T.Extensions;
 
-    //TODO: Automatically hatch raid eggs and update lobby.
+    //TODO: Automatically hatch raid eggs, update lobby, and channel name.
 
     public class RaidLobbyManager
     {
@@ -38,12 +38,12 @@
             "➡",
             "✅",
             "❌",
-            "1⃣",
-            "2⃣",
-            "3⃣",
-            "4⃣",
-            "5⃣",
-            "🔟",
+            //"1⃣",
+            //"2⃣",
+            //"3⃣",
+            //"4⃣",
+            //"5⃣",
+            //"🔟",
             "🔄"
         };
 
@@ -396,6 +396,8 @@
 
         private async Task CheckActiveLobbies()
         {
+            _logger.Trace($"RaidLobbyManager::CheckActiveLobbies");
+
             var lobbyCategory = await GetLobbyCategory();
             var lobbyChannels = lobbyCategory.Children.ToList();
             for (var i = 0; i < lobbyChannels.Count; i++)
@@ -403,6 +405,8 @@
                 var lobbyChannel = lobbyChannels[i];
                 if (!_config.RaidLobbies.ContainsKey(lobbyChannel.Name))
                     continue;
+
+                //TODO: Check if egg that has hatched into a raid.
 
                 var lobby = _config.RaidLobbies[lobbyChannel.Name];
                 if (!lobby.IsExpired)
