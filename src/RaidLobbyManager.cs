@@ -171,7 +171,7 @@
             await _client.SetDefaultRaidReactions(message, false);
 
             var lobby = LobbyFromTitle(embed.Title);
-            if (lobby.Gym.RaidLevel == 0)
+            if (lobby.Gym?.RaidLevel == 0)
             {
                 _logger.Warn($"Raid at gym '{embed.Title}' is over and doesn't exist.");
                 return;
@@ -329,7 +329,7 @@
                     var fastMoveTypeId = _client.Guilds[_config.GuildId].GetEmojiId($"types_{fastMove.Type}");
                     if (fastMoveTypeId > 0)
                     {
-                        eb.AddField("Fast Move", $"<{fastMove.Type.ToLower()}:{fastMoveTypeId}> {fastMove.Name}", true);
+                        eb.AddField("Fast Move", string.Format(Strings.TypeEmojiSchema, fastMove.Type.ToLower(), fastMoveTypeId) + $" {fastMove.Name}", true);
                     }
                 }
                 if (Database.Movesets.ContainsKey(lobby.Gym.RaidPokemonMove2))
@@ -338,14 +338,22 @@
                     var chargeMoveTypeId = _client.Guilds[_config.GuildId].GetEmojiId($"types_{chargeMove.Type}");
                     if (chargeMoveTypeId > 0)
                     {
-                        eb.AddField("Charge Move", $"<{chargeMove.Type.ToLower()}:{chargeMoveTypeId}> {chargeMove.Name}", true);
+                        eb.AddField("Charge Move", string.Format(Strings.TypeEmojiSchema, chargeMove.Type.ToLower(), chargeMoveTypeId) + $" {chargeMove.Name}", true);
                     }
                 }
+
+                var weaknessesEmojis = Database.Pokemon[lobby.Gym.RaidPokemonId].Types.GetWeaknessEmojiIcons(_client, _config.GuildId);
+                if (!string.IsNullOrEmpty(weaknessesEmojis))
+                {
+                    eb.AddField("Weaknesses", weaknessesEmojis + "\r\n", true);
+                    //eb.Description += $"**Weaknesses:** {weaknessesEmojis}\r\n";
+                }
             }
+
             if (_client.Guilds.ContainsKey(_config.GuildId))
             {
                 var teamId = _client.Guilds[_config.GuildId].GetEmojiId(lobby.Gym.Team.ToString().ToLower());
-                eb.AddField("Team", $"<{lobby.Gym.Team.ToString().ToLower()}:{teamId}>", true);
+                eb.AddField("Team", $"<:{lobby.Gym.Team.ToString().ToLower()}:{teamId}>", true);
             }
 
             if (!string.IsNullOrEmpty(lobby.StartedBy))
@@ -353,8 +361,8 @@
                 eb.AddField("Started By", lobby.StartedBy, true);
             }
             eb.AddField("Location", $"{Math.Round(lobby.Gym.Latitude, 5)},{Math.Round(lobby.Gym.Longitude, 5)}\r\n" + 
-                                    $"[[Google Maps]({string.Format(Strings.GoogleMaps, lobby.Gym.Latitude, lobby.Gym.Longitude)})]\r\n" + 
-                                    $"[[Apple Maps]({string.Format(Strings.AppleMaps, lobby.Gym.Latitude, lobby.Gym.Longitude)})]", true);
+                                    $"**[[Google Maps]({string.Format(Strings.GoogleMaps, lobby.Gym.Latitude, lobby.Gym.Longitude)})]**\r\n" + 
+                                    $"**[[Apple Maps]({string.Format(Strings.AppleMaps, lobby.Gym.Latitude, lobby.Gym.Longitude)})]**", true);
 
             if (!_config.RaidLobbies.ContainsKey(lobby.ChannelName))
             {
@@ -368,16 +376,10 @@
             if (raidLobby.Users.Count > 0)
             {
                 var usersOtw = string.Join(Environment.NewLine, raidLobby.Users?.Where(x => x.IsOnTheWay).Select(x => x.Username));
-                if (!string.IsNullOrEmpty(usersOtw))
-                {
-                    eb.AddField("Trainers On the Way:", usersOtw ?? "Unknown", true);
-                }
+                eb.AddField("Trainers On the Way:", string.IsNullOrEmpty(usersOtw) ? "Unknown" : usersOtw, true);
 
                 var usersHere = string.Join(Environment.NewLine, raidLobby.Users?.Where(x => x.IsHere).Select(x => x.Username));
-                if (!string.IsNullOrEmpty(usersHere))
-                {
-                    eb.AddField("Trainers At the Raid:", usersHere ?? "Unknown", true);
-                }
+                eb.AddField("Trainers At the Raid:", string.IsNullOrEmpty(usersHere) ? "Unknown" : usersHere, true);
             }
 
             var pinned = await lobbyChannel.GetPinnedMessagesAsync();
