@@ -412,7 +412,11 @@
 
                 var lobby = _config.RaidLobbies[lobbyChannel.Name];
                 if (!lobby.IsExpired)
+                {
+                    await UpdateLobbyChannelName(lobby, lobbyChannel);
+                    await CreatePinnedLobbyMessage(lobby, lobbyChannel, null, false);
                     continue;
+                }
 
                 if (!_config.RaidLobbies.Remove(lobbyChannel.Name))
                 {
@@ -422,6 +426,11 @@
 
                 await lobbyChannel.DeleteAsync("Automated: Raid lobby expired.");
             }
+        }
+
+        private async Task UpdateLobbyChannelName(Lobby lobby, DiscordChannel lobbyChannel)
+        {
+            await lobbyChannel.ModifyAsync(lobby.ChannelName);
         }
 
         private Gym GetRaidFromGymName(string gymName)
