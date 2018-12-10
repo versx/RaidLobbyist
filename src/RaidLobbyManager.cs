@@ -18,8 +18,6 @@
     using T.Diagnostics;
     using T.Extensions;
 
-    //TODO: Automatically hatch raid eggs, update lobby, and channel name.
-
     public class RaidLobbyManager
     {
         #region Variables
@@ -346,7 +344,6 @@
                 if (!string.IsNullOrEmpty(weaknessesEmojis))
                 {
                     eb.AddField("Weaknesses", weaknessesEmojis + "\r\n", true);
-                    //eb.Description += $"**Weaknesses:** {weaknessesEmojis}\r\n";
                 }
             }
 
@@ -382,6 +379,12 @@
                 eb.AddField("Trainers At the Raid:", string.IsNullOrEmpty(usersHere) ? "Unknown" : usersHere, true);
             }
 
+            eb.Footer = new DiscordEmbedBuilder.EmbedFooter
+            {
+                Text = $"➡ On your way ✅ Here ❌ No longer interested 🔄 Refresh lobby message.",
+                IconUrl = lobbyChannel.Guild?.IconUrl
+            };
+
             var pinned = await lobbyChannel.GetPinnedMessagesAsync();
             var lobbyMessage = default(DiscordMessage);
             if (pinned.Count > 0)
@@ -407,8 +410,6 @@
                 var lobbyChannel = lobbyChannels[i];
                 if (!_config.RaidLobbies.ContainsKey(lobbyChannel.Name))
                     continue;
-
-                //TODO: Check if egg that has hatched into a raid.
 
                 var lobby = _config.RaidLobbies[lobbyChannel.Name];
                 if (!lobby.IsExpired)
