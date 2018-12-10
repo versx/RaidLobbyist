@@ -42,7 +42,7 @@
         public DateTime CreatedAt { get; set; }
 
         [JsonIgnore]
-        public bool IsExpired => CreatedAt.AddHours(2) < DateTime.Now;
+        public bool IsExpired => CreatedAt.AddHours(2).AddMinutes(10) < DateTime.Now;
 
         public Lobby()
         {
