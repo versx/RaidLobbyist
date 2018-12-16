@@ -288,8 +288,8 @@
         {
             _logger.Trace($"RaidLobbyManager::CreatePinnedLobbyMessage [Lobby={lobby.ChannelName}, DiscordChannel={lobbyChannel.Name}, DiscordUser={user}, IsOtw={isOtw}]");
 
-            var pkmnImage = lobby.Gym.IsEgg 
-                ? string.Format(Strings.EggImage, lobby.Gym.RaidLevel) 
+            var pkmnImage = lobby.Gym.IsEgg
+                ? string.Format(Strings.EggImage, lobby.Gym.RaidLevel)
                 : lobby.Gym.RaidPokemonId.GetPokemonImage(lobby.Gym.RaidPokemonForm.ToString());
             var eb = new DiscordEmbedBuilder
             {
@@ -357,8 +357,8 @@
             {
                 eb.AddField("Started By", lobby.StartedBy, true);
             }
-            eb.AddField("Location", $"{Math.Round(lobby.Gym.Latitude, 5)},{Math.Round(lobby.Gym.Longitude, 5)}\r\n" + 
-                                    $"**[[Google Maps]({string.Format(Strings.GoogleMaps, lobby.Gym.Latitude, lobby.Gym.Longitude)})]**\r\n" + 
+            eb.AddField("Location", $"{Math.Round(lobby.Gym.Latitude, 5)},{Math.Round(lobby.Gym.Longitude, 5)}\r\n" +
+                                    $"**[[Google Maps]({string.Format(Strings.GoogleMaps, lobby.Gym.Latitude, lobby.Gym.Longitude)})]**\r\n" +
                                     $"**[[Apple Maps]({string.Format(Strings.AppleMaps, lobby.Gym.Latitude, lobby.Gym.Longitude)})]**", true);
 
             if (!_config.RaidLobbies.ContainsKey(lobby.ChannelName))
@@ -370,14 +370,18 @@
             var raidLobby = _config.RaidLobbies[lobby.ChannelName];
             AddOrUpdateUser(raidLobby, user, isOtw);
 
-            if (raidLobby.Users.Count > 0)
+            if (raidLobby.Users?.Count == 0)
             {
-                var usersOtw = string.Join(Environment.NewLine, raidLobby.Users?.Where(x => x.IsOnTheWay).Select(x => x.Username));
-                eb.AddField("Trainers On the Way:", string.IsNullOrEmpty(usersOtw) ? "Unknown" : usersOtw, true);
-
-                var usersHere = string.Join(Environment.NewLine, raidLobby.Users?.Where(x => x.IsHere).Select(x => x.Username));
-                eb.AddField("Trainers At the Raid:", string.IsNullOrEmpty(usersHere) ? "Unknown" : usersHere, true);
+                //Delete the channel if no one is interested anymore.
+                await lobbyChannel.DeleteAsync();
+                return;
             }
+
+            var usersOtw = string.Join(Environment.NewLine, raidLobby.Users?.Where(x => x.IsOnTheWay).Select(x => x.Username));
+            eb.AddField("Trainers On the Way:", string.IsNullOrEmpty(usersOtw) ? "Unknown" : usersOtw, true);
+
+            var usersHere = string.Join(Environment.NewLine, raidLobby.Users?.Where(x => x.IsHere).Select(x => x.Username));
+            eb.AddField("Trainers At the Raid:", string.IsNullOrEmpty(usersHere) ? "Unknown" : usersHere, true);
 
             eb.Footer = new DiscordEmbedBuilder.EmbedFooter
             {

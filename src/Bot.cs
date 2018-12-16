@@ -4,6 +4,7 @@
     using System.Threading.Tasks;
 
     using DSharpPlus;
+    using DSharpPlus.Entities;
     using DSharpPlus.EventArgs;
 
     using T.Configuration;
@@ -79,7 +80,7 @@
         {
             _logger.Info($"Connected.");
 
-            await Task.CompletedTask;
+            await _client.UpdateStatusAsync(new DiscordGame("Your lobby is waiting..."));
         }
 
         private async Task Client_MessageReactionAdded(MessageReactionAddEventArgs e)
