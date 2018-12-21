@@ -224,11 +224,11 @@
             _logger.Trace($"RaidLobbyManager::LobbyFromTitle [Title={title}]");
 
             if (!title.Contains(":"))
-                return new Lobby("", title); //TODO: Redo
+                return new Lobby("Unknown", title); //TODO: Redo
 
             var parts = title.Split(':');
             if (parts.Length > 2 || parts.Length <= 0)
-                return new Lobby("", title); //TODO: Redo
+                return new Lobby("Unknown", title); //TODO: Redo
 
             var city = parts[0];
             var gymName = parts[1].TrimStart(' ');
@@ -246,8 +246,6 @@
 
         private async Task<DiscordChannel> GetLobbyCategory()
         {
-            _logger.Trace($"RaidLobbyManager::GetLobbyCategory");
-
             var lobbyCategory = await _client.GetChannelAsync(_config.LobbyCategoryId);
             if (lobbyCategory == null)
             {
@@ -349,6 +347,13 @@
 
             if (_client.Guilds.ContainsKey(_config.GuildId))
             {
+                if (lobby.Gym.ExRaidEligible)
+                {
+                    var exEmojiId = _client.Guilds.ContainsKey(_config.GuildId) ? _client.Guilds[_config.GuildId].GetEmojiId("ex") : 0;
+                    var exEmoji = exEmojiId > 0 ? $"<:ex:{exEmojiId}>" : "EX";
+                    eb.AddField("Ex-Eligible", exEmoji + " **Gym!**");
+                }
+
                 var teamId = _client.Guilds[_config.GuildId].GetEmojiId(lobby.Gym.Team.ToString().ToLower());
                 eb.AddField("Team", $"<:{lobby.Gym.Team.ToString().ToLower()}:{teamId}>", true);
             }
@@ -389,9 +394,9 @@
                 IconUrl = lobbyChannel.Guild?.IconUrl
             };
 
-            var pinned = await lobbyChannel.GetPinnedMessagesAsync();
             var lobbyMessage = default(DiscordMessage);
-            if (pinned.Count > 0)
+            var pinned = await lobbyChannel.GetPinnedMessagesAsync();
+            if (pinned?.Count > 0)
             {
                 lobbyMessage = await pinned[0].ModifyAsync(string.Empty, eb);
             }
@@ -405,8 +410,6 @@
 
         private async Task CheckActiveLobbies()
         {
-            _logger.Trace($"RaidLobbyManager::CheckActiveLobbies");
-
             var lobbyCategory = await GetLobbyCategory();
             var lobbyChannels = lobbyCategory.Children.ToList();
             for (var i = 0; i < lobbyChannels.Count; i++)
@@ -423,6 +426,8 @@
                     continue;
                 }
 
+                _logger.Debug($"Lobby {lobbyChannel.Name} has expired, deleting...");
+
                 if (!_config.RaidLobbies.Remove(lobbyChannel.Name))
                 {
                     _logger.Warn($"Could not remove raid lobby '{lobbyChannel.Name}'.");
@@ -430,6 +435,7 @@
                 }
 
                 await lobbyChannel.DeleteAsync("Automated: Raid lobby expired.");
+                _logger.Debug($"Lobby {lobbyChannel.Name} was deleted.");
             }
         }
 
@@ -452,7 +458,7 @@
 
         private void AddOrUpdateUser(Lobby lobby, DiscordUser user, bool isOtw)
         {
-            _logger.Trace($"RaidLobbyManager [Lobby={lobby.ChannelName}, DiscordUser={user}, IsOtw={isOtw}]");
+            _logger.Trace($"RaidLobbyManager::AddOrUpdateUser [Lobby={lobby.ChannelName}, DiscordUser={user}, IsOtw={isOtw}]");
 
             if (user == null)
                 return;
