@@ -1,4 +1,4 @@
-﻿namespace T.Extensions
+﻿namespace RaidLobbyist.Extensions
 {
     using System;
     using System.Collections.Generic;
@@ -6,8 +6,8 @@
 
     using DSharpPlus;
 
-    using T.Data.Models;
-    using T.Extensions;
+    using RaidLobbyist.Data.Models;
+    using RaidLobbyist.Extensions;
 
     public static class PokemonExtensions
     {
@@ -18,7 +18,7 @@
 
         public static List<PokemonType> GetWeaknesses(this PokemonType type)
         {
-            var types = new PokemonType[0];
+            var types = Array.Empty<PokemonType>();
             switch (type)
             {
                 case PokemonType.Normal:

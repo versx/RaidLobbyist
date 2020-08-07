@@ -1,4 +1,4 @@
-﻿namespace T.Data
+﻿namespace RaidLobbyist.Data
 {
     using System.Data;
 

@@ -1,4 +1,4 @@
-﻿namespace T
+﻿namespace RaidLobbyist
 {
     using System;
     using System.Collections.Generic;
@@ -12,11 +12,11 @@
 
     using ServiceStack.OrmLite;
 
-    using T.Configuration;
-    using T.Data;
-    using T.Data.Models;
-    using T.Diagnostics;
-    using T.Extensions;
+    using RaidLobbyist.Configuration;
+    using RaidLobbyist.Data;
+    using RaidLobbyist.Data.Models;
+    using RaidLobbyist.Diagnostics;
+    using RaidLobbyist.Extensions;
 
     public class RaidLobbyManager
     {
@@ -294,11 +294,11 @@
                 Title = $"{lobby.City}: {lobby.Gym.Name}",
                 Color = lobby.Gym.RaidLevel.BuildRaidColor(),
                 Url = string.Format(Strings.GoogleMaps, lobby.Gym.Latitude, lobby.Gym.Longitude),
-                ImageUrl = string.Format(Strings.GoogleMapsStaticImage, lobby.Gym.Latitude, lobby.Gym.Longitude) + $"&key={_config.GmapsKey}",
+                ImageUrl = string.Format(Strings.GoogleMapsStaticImage, lobby.Gym.Latitude, lobby.Gym.Longitude),
                 ThumbnailUrl = pkmnImage,
                 Footer = new DiscordEmbedBuilder.EmbedFooter
                 {
-                    Text = $"versx | {DateTime.Now}",
+                    Text = $"{lobbyChannel?.Guild.Name} | {DateTime.Now}",
                     IconUrl = _client.Guilds.ContainsKey(_config.GuildId) ? _client.Guilds[_config.GuildId].IconUrl : string.Empty
                 }
             };

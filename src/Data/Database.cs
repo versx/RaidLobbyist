@@ -1,11 +1,11 @@
-﻿namespace T.Data
+﻿namespace RaidLobbyist.Data
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
 
-    using T.Data.Models;
-    using T.Diagnostics;
+    using RaidLobbyist.Data.Models;
+    using RaidLobbyist.Diagnostics;
 
     using Newtonsoft.Json;
 
@@ -40,7 +40,7 @@
             if (string.IsNullOrEmpty(data))
             {
                 _logger.Error($"{filePath} database is empty.");
-                return default(T);
+                return default;
             }
 
             return (T)JsonConvert.DeserializeObject(data, typeof(T));

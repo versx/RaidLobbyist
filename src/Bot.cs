@@ -1,4 +1,4 @@
-﻿namespace T
+﻿namespace RaidLobbyist
 {
     using System;
     using System.Threading.Tasks;
@@ -7,9 +7,9 @@
     using DSharpPlus.Entities;
     using DSharpPlus.EventArgs;
 
-    using T.Configuration;
-    using T.Diagnostics;
-    using T.Extensions;
+    using RaidLobbyist.Configuration;
+    using RaidLobbyist.Diagnostics;
+    using RaidLobbyist.Extensions;
 
     public class Bot
     {
@@ -65,6 +65,13 @@
                 UseInternalLogHandler = true
             });
             _client.Ready += Client_Ready;
+            _client.MessageCreated += async e => 
+            {
+                if (!config.RaidChannelIdPool.Contains(e.Channel.Id))
+                    return;
+
+                await _client.SetDefaultRaidReactions(e.Message, false, true);
+            };
             _client.MessageReactionAdded += Client_MessageReactionAdded;
             _client.ClientErrored += Client_ClientErrored;
             _client.DebugLogger.LogMessageReceived += DebugLogger_LogMessageReceived;
@@ -104,11 +111,11 @@
             ConsoleColor color;
             switch (e.Level)
             {
-                case LogLevel.Error: color = ConsoleColor.DarkRed; break;
-                case LogLevel.Warning: color = ConsoleColor.Yellow; break;
-                case LogLevel.Info: color = ConsoleColor.White; break;
-                case LogLevel.Critical: color = ConsoleColor.Red; break;
-                case LogLevel.Debug: default: color = ConsoleColor.DarkGray; break;
+                case DSharpPlus.LogLevel.Error: color = ConsoleColor.DarkRed; break;
+                case DSharpPlus.LogLevel.Warning: color = ConsoleColor.Yellow; break;
+                case DSharpPlus.LogLevel.Info: color = ConsoleColor.White; break;
+                case DSharpPlus.LogLevel.Critical: color = ConsoleColor.Red; break;
+                case DSharpPlus.LogLevel.Debug: default: color = ConsoleColor.DarkGray; break;
             }
 
             //Source

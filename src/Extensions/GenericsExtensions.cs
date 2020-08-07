@@ -1,4 +1,4 @@
-﻿namespace T.Extensions
+﻿namespace RaidLobbyist.Extensions
 {
     using System;
     using System.Diagnostics;
@@ -22,7 +22,7 @@
             catch (Exception ex)
             {
                 Debug.WriteLine($"StringToObject: {ex}");
-                return default(T);
+                return default;
             }
         }
 

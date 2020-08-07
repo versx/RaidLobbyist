@@ -1,4 +1,4 @@
-﻿namespace T.Extensions
+﻿namespace RaidLobbyist.Extensions
 {
     using System;
     using System.Linq;
@@ -7,7 +7,7 @@
     using DSharpPlus;
     using DSharpPlus.Entities;
 
-    using T.Diagnostics;
+    using RaidLobbyist.Diagnostics;
 
     public static class DiscordExtensions
     {
@@ -95,11 +95,9 @@
             switch (level)
             {
                 case 1:
-                    return DiscordColor.HotPink;
                 case 2:
                     return DiscordColor.HotPink;
                 case 3:
-                    return DiscordColor.Yellow;
                 case 4:
                     return DiscordColor.Yellow;
                 case 5:

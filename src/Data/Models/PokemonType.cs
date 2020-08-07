@@ -1,4 +1,4 @@
-﻿namespace T.Data.Models
+﻿namespace RaidLobbyist.Data.Models
 {
     public enum PokemonType
     {

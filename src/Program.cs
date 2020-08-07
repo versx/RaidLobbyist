@@ -1,4 +1,4 @@
-﻿namespace T
+﻿namespace RaidLobbyist
 {
     using System.Threading.Tasks;
 

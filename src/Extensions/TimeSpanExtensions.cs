@@ -1,4 +1,4 @@
-﻿namespace T.Extensions
+﻿namespace RaidLobbyist.Extensions
 {
     using System;
 

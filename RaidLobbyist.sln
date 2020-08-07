@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27703.2035
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30309.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaidLobbyist", "src\RaidLobbyist.csproj", "{DFBCF700-AFB9-4271-BDC1-A32C3C3D2BB1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaidLobbyist", "src\RaidLobbyist.csproj", "{698F24A6-EEEA-4680-A232-9AAFEEAD82DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DFBCF700-AFB9-4271-BDC1-A32C3C3D2BB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DFBCF700-AFB9-4271-BDC1-A32C3C3D2BB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DFBCF700-AFB9-4271-BDC1-A32C3C3D2BB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DFBCF700-AFB9-4271-BDC1-A32C3C3D2BB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{698F24A6-EEEA-4680-A232-9AAFEEAD82DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{698F24A6-EEEA-4680-A232-9AAFEEAD82DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{698F24A6-EEEA-4680-A232-9AAFEEAD82DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{698F24A6-EEEA-4680-A232-9AAFEEAD82DA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {94EEA9F1-A18B-4519-ADF7-3A5D50F10C0D}
+		SolutionGuid = {0607BB70-4273-4E36-82C4-E52C051CD8E0}
 	EndGlobalSection
 EndGlobal

@@ -1,4 +1,4 @@
-﻿namespace T.Configuration
+﻿namespace RaidLobbyist.Configuration
 {
     using System;
     using System.Collections.Generic;
@@ -6,8 +6,8 @@
 
     using Newtonsoft.Json;
 
-    using T.Data.Models;
-    using T.Diagnostics;
+    using RaidLobbyist.Data.Models;
+    using RaidLobbyist.Diagnostics;
 
     public class Config
     {
@@ -36,8 +36,8 @@
         [JsonProperty("connectionString")]
         public string ConnectionString { get; set; }
 
-        [JsonProperty("gmapsKey")]
-        public string GmapsKey { get; set; }
+        [JsonProperty("urls")]
+        public UrlConfiguration Urls { get; set; }
 
         [JsonProperty("lobbies")]
         public Dictionary<string, Lobby> RaidLobbies { get; set; }
@@ -77,10 +77,21 @@
             if (string.IsNullOrEmpty(data))
             {
                 _logger.Error($"{filePath} database is empty.");
-                return default(T);
+                return default;
             }
 
             return (T)JsonConvert.DeserializeObject(data, type);
         }
+    }
+
+    public class UrlConfiguration
+    {
+        public string StaticMap { get; set; }
+
+        public string Pokemon { get; set; }
+
+        public string Egg { get; set; }
+
+        public string Quest { get; set; }
     }
 }
